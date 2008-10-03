@@ -110,39 +110,37 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 	
 	/**
 	 * Constructs a <code>NoteADT</code> from a <code>String</code>.
-	 * The <code>String</code> should follow the following format:
-	 * <pre>note[occidental][octave]</pre>
+	 * The <code>String</code> should contain the three following elements (in any order):
+	 * <pre>note [accidental] [octave]</pre>
 	 * Where:
 	 * <ul>
 	 * <li><code>note</code> is required and is a single letter in the range 'A' through 'G'
-	 * (case insensitive) and represents the note name</li>
-	 * <li><code>occidental</code> is optional and is either of the characters '#' or 'b' and
-	 * signifies that the note is sharp or flat respectively.  If not specified then the note
-	 * is assumed to be natural (not occidental)</li>
+	 * (case sensitive) and represents the note name</li>
+	 * <li><code>accidental</code> is optional and is one of '#', 'x', 'b', or 'bb' and
+	 * signifies that the note is sharp, double sharp, flat, or double flat respectively.
+	 * If not specified then the note is assumed to be natural (not accidental)</li>
 	 * <li><code>octave</code> is optional and is an integer in the range -1 through 9
 	 * and represents the octave this note is in.  If this is not specified then the note is
 	 * assumed to be in the octave specified by the constant <code>DEFAULT_OCTAVE</code></li>
 	 * Some examples of valid inputs are:
 	 * <pre>
-	 * C
-	 * C4
+	 * G
+	 * A4
 	 * C#
 	 * B#4
-	 * A-1
+	 * D2bb
+	 * C-1x
 	 * Eb2
 	 * </pre>
 	 * @param note the note as represented by a <code>String</code>
 	 * @throws IllegalArgumentException if the <code>String</code> is not in a valid format
 	 */
 	public NoteADT (String note) throws IllegalArgumentException {
-		if (!isParsable(note))
-			throw new IllegalArgumentException("The note could not be parsed.");
-		
 		int letter = parseNote(note);
-		int occ = parseOccidental(note);
+		int acc = parseAccidental(note);
 		int octave = parseOctave(note);
 		
-		int test =(octave + 1) * 12 + letter + occ;
+		int test = (octave + 1) * 12 + letter + acc;
 		if (test < 0 || test > 127)
 			throw new IllegalArgumentException("The note was parsed but was out of range.");
 		
@@ -169,14 +167,14 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 	 * If this note is A4 then the result is 0.
 	 * @return the number of semitones this note is from A4
 	 */
-	public int asSemitonesFromA4 () {
+	public int asSemitonesFromConcertPitch () {
 		return asMIDI() - 69;
 	}
 	
 	/**
-	 * Returns the MIDI index that sthis note represents.
+	 * Returns the MIDI index that this note represents.
+	 * This is an <code>int</code> in the range 0 through 127 inclusive.
 	 * @return the MIDI index
-	 * TODO
 	 */
 	public int asMIDI () {
 		return midi;
@@ -187,16 +185,20 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 	
 	/* Methods */
 	
-	public int octaveWith (NoteADT n) {
-		if (n.midi - midi == 12)
-			return 1;
-		
-		if (n.midi - midi == -12)
-			return -1;
-		
-		return 0;
+	/**
+	 * Compares a <code>NoteADT</code> to this <code>NoteADT</code> and determines if the two notes form an octave.
+	 * @param n the <code>NoteADT</code> to compare to this <code>NoteADT</code>
+	 * @return <code>true</code> if these notes form an octave
+	 */
+	public boolean makesOctave (NoteADT n) {
+		return Math.abs(n.midi - midi) == 12;
 	}
 	
+	/**
+	 * Transposes this <code>NoteADT</code> by a specified number of semitones.
+	 * @param semitones the number of semitones to transpose this note (this can be positive or negative)
+	 * @throws IllegalArgumentException if the transposition would place the note out of range
+	 */
 	public void transpose (int semitones) throws IllegalArgumentException {
 		if (midi + semitones < 0 || midi + semitones > 127)
 			throw new IllegalArgumentException("The offset in semitones must be between " +
@@ -210,7 +212,8 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 	/* (Object) Methods */
 	
 	/**
-	 * TODO
+	 * Compares this <code>NoteADT</code> to another and returns <code>true</code> if these notes are equivalent.
+	 * @param o the <code>Object</code> to compare this <code>NoteADT</code> against
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -230,6 +233,18 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 	
 	/* (Comparable) Methods */
 	
+	/**
+	 * Compares this <code>NoteADT</code> with the specified <code>NoteADT</code> for order.
+	 * For example, if there are two <code>NoteADT</code> objects called <code>A4</code> and <code>B4</code>
+	 * which represent the notes A4 and B4 respectively, then the following statements are true:
+	 * <pre>
+	 * (A4).compareTo(B4) == -1
+	 * (B4).compareTo(A4) == 1
+	 * (A4).compareTo(A4) == 0
+	 * </pre>
+	 * @param n the <code>NoteADT</code> to compare this <code>NoteADT</code> against
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compareTo (NoteADT n) {
 		if (n == null)
@@ -247,115 +262,34 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 	
 	/* Local Methods */
 	
-	private boolean isParsable (String str) {
-		char first, second, third, fourth;
-		switch (str.length()) {
-			case 1:
-				//Must be a single letter
-				
-				first = Character.toUpperCase(str.charAt(0));
-				return first >= 'A' && first <= 'G';
-				
-			case 2:
-				//Could be a letter and an occidental
-				//Or a letter and an octave
-				
-				first = Character.toUpperCase(str.charAt(0));
-				if (first < 'A' || first > 'G')
-					return false;
-				
-				second = Character.toLowerCase(str.charAt(1));
-				return second == 'b' || second == '#' ||
-					   (second >= '0' && second <= '9');
-				
-			case 3:
-				//Could be a letter with occidental and octave
-				//Or a letter and an octave of "-1"
-				first = Character.toUpperCase(str.charAt(0));
-				if (first < 'A' || first > 'G')
-					return false;
-				
-				second = Character.toLowerCase(str.charAt(1));
-				third = Character.toLowerCase(str.charAt(2));
-				return ((second == 'b' || second == '#') &&
-					    (third >= '0' && third <= '9')) ||
-					   (second == '-' && third == '1');
-			
-			case 4:
-				//Must be a letter with occidental and
-				//an octave of "-1"
-				first = Character.toUpperCase(str.charAt(0));
-				if (first < 'A' || first > 'G')
-					return false;
-				
-				second = Character.toLowerCase(str.charAt(1));
-				third = Character.toLowerCase(str.charAt(2));
-				fourth = Character.toLowerCase(str.charAt(3));
-				return (second == 'b' || second == '#') &&
-					   third == '-' && fourth == '1';
-				
-			default:
-				//Reject all other strings
-				return false;
-		}
+	private int parseNote (String str) throws IllegalArgumentException {
+		for (char c = 'A'; c <= 'G'; c++)
+			if (str.contains(String.valueOf(c)))
+				return letterTable.get(c);
+		throw new IllegalArgumentException("The note could not be parsed.");
 	}
 	
-	private int parseNote (String str) {
-		//C starts at 0 and a half step is an increment
-		char letter = str.toUpperCase().charAt(0);
-		return letterTable.get(letter).intValue();
+	private int parseAccidental (String str) {
+		if (str.contains("bb"))
+			return -2;
 		
-	}
-	
-	private int parseOccidental (String str) {
-		//if length is 1 there is no occidental
-		if (str.length() == 1)
-			return 0;
-		
-		//if it is flat return an offset of -1
-		char second = str.toLowerCase().charAt(1);
-		if (second == 'b')
+		if (str.contains("b"))
 			return -1;
 		
-		//if it is sharp return an offset of 1
-		if (second == '#')
+		if (str.contains("#"))
 			return 1;
 		
-		//it is natural
+		if (str.contains("x"))
+			return 2;
+		
 		return 0;
 	}
 	
 	private int parseOctave (String str) {
-		//Example of all cases (# represent any occidental):
-		//C
-		//C#
-		//C2
-		//C#2
-		//C-1
-		//C#-1
-		
-		//if there is no octave specified then use the defalut octave
-		char last = Character.toLowerCase(str.charAt(str.length() - 1));
-		if (last < '0' && last > '9')
-			return DEFAULT_OCTAVE;
-		
-		assert (str.length() > 1);
-		//must be 2 - 4 digits
-		char second = Character.toLowerCase(str.charAt(1));
-		if (str.length() == 2)
-			return Character.digit(second, 10);
-		
-		if (str.length() == 4)
-			return -1;
-		
-		assert (str.length() == 3);
-		//must be three digits
-		
-		if (second == '-')
-			return -1;
-		
-		return Character.digit(last, 10);
-		
+		for (int i = -1; i <= 9; i++)
+			if (str.contains(String.valueOf(i)))
+				return i;
+		return DEFAULT_OCTAVE;
 	}
 	
 	/* END Local Methods */
