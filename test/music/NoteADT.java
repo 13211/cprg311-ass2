@@ -5,13 +5,15 @@
 
 package music;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.HashMap;
 
 /**
  * An abstract data type (ADT) which represents a musical note.
  * The range for the note is C-1 (MIDI 0) through G9 (MIDI 127).
  */
-public abstract class NoteADT implements Comparable<NoteADT> {
+public class NoteADT implements Comparable<NoteADT> {
 	
 	/* Static */
 		
@@ -19,6 +21,8 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 		
 		private static final double BASE_A4 = 440.0;
 		private static final int DEFAULT_OCTAVE = 4;
+		private static final int ROUNDING_PRECISION = 2;
+		private static final MathContext ROUNDING;
 		
 		/* END Static Constants */
 		
@@ -35,12 +39,14 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 		/* Static Initializer */
 		
 		static {
+			ROUNDING = new MathContext(ROUNDING_PRECISION);
+			
 			midiTable = new HashMap<Integer, Double>(128);
 			freqTable = new HashMap<Double, Integer>(128);
 			for (int i = 0; i < 128; i++) {
 				double val = BASE_A4 * Math.pow(2,(i - 69) / 12.0);
 				midiTable.put(Integer.valueOf(i), val);
-				freqTable.put(val, Integer.valueOf(i));
+				freqTable.put((new BigDecimal(val)).round(ROUNDING).doubleValue(), Integer.valueOf(i));
 			}
 			
 			letterTable = new HashMap<Character, Integer>(7);
@@ -62,9 +68,7 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 		 * Used for debugging only.
 		 */
 		protected static void printTables () {
-			for (int i = 0; i < 128; i++) {
-				System.out.println(i + "\t" + midiTable.get(Integer.valueOf(i)));
-			}
+			System.out.println(freqTable.toString());
 		}
 		
 		/* END Static Methods */
@@ -90,10 +94,11 @@ public abstract class NoteADT implements Comparable<NoteADT> {
 	 * @throws IllegalArgumentException if the frequency is not a half tone frequency or is not in the range 0.0 through 13000.0 inclusive.
 	 */
 	public NoteADT (double frequency) throws IllegalArgumentException {
-		if (!midiTable.containsValue(frequency))
+		double dFreq = (new BigDecimal(frequency)).round(ROUNDING).doubleValue();
+		if (!midiTable.containsValue(dFreq))
 			throw new IllegalArgumentException("The frequency must be a valid half tone frequency between 0.0 and 13000.0 inclusive.");
 		
-		midi = freqTable.get(frequency);
+		midi = freqTable.get(dFreq);
 	}
 	
 	/**
