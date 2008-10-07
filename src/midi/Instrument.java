@@ -15,8 +15,9 @@ public class Instrument {
 		Synthesizer synthesizer = null;
     	synthesizer = MidiSystem.getSynthesizer();
 	    synthesizer.open();
-	    
 	    javax.sound.midi.Instrument [] instruments = synthesizer.getDefaultSoundbank().getInstruments();
+	    if (instruments == null)
+	    	throw new MidiUnavailableException("MIDI unavailable. There is no default soundbank.");
 		if (patch < 0 || patch > instruments.length)
 			throw new IllegalArgumentException("The patch index must be between 0 and " + instruments.length + " inclusive.");
 		
