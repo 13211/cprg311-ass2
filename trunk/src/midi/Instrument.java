@@ -11,14 +11,13 @@ public class Instrument {
 	/* END Fields */
 	
 	
-	public Instrument (int patch) throws IllegalArgumentException {
+	public Instrument (int patch) throws IllegalArgumentException, MidiUnavailableException {
 		Synthesizer synthesizer = null;
-	    try {
-	    	synthesizer = MidiSystem.getSynthesizer();
-		    synthesizer.open();
-	    } catch(MidiUnavailableException mue) {
-	    }
+    	synthesizer = MidiSystem.getSynthesizer();
+	    synthesizer.open();
 	    javax.sound.midi.Instrument [] instruments = synthesizer.getDefaultSoundbank().getInstruments();
+	    if (instruments == null)
+	    	throw new MidiUnavailableException("MIDI unavailable. There is no default soundbank.");
 		if (patch < 0 || patch > instruments.length)
 			throw new IllegalArgumentException("The patch index must be between 0 and " + instruments.length + " inclusive.");
 		
