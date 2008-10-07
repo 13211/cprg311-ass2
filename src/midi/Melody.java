@@ -1,5 +1,7 @@
 package midi;
 
+import javax.sound.midi.MidiUnavailableException;
+
 
 public class Melody {
 	
@@ -8,36 +10,22 @@ public class Melody {
 	 */
 	public static void main (String [] args) {
 		if (args.length != 1) {
-			//TODO
-			System.err.println("Usage ");
+			System.err.println("Usage: Melody <startnote>");
 			System.exit(0);
 		}
+		
 		String str = args[0];
-		Note start;
 		try {
-			try {
-				int semitones = Integer.parseInt(str);
-				start = new Note(semitones);
-			} catch (NumberFormatException e) {
-				try {
-					double frequency = Double.parseDouble(str);
-					start = new Note(frequency);
-				} catch (NumberFormatException e1) {
-					start = new Note(str);
-				}
-			}
-		} catch (IllegalArgumentException e1) {
-			System.out.println("Error: " + e1.getMessage());
-			start = null;
+			Note start = Note.parseNoteString(str);
+			Piano p = new Piano();
+			for (Note n = new Note(start); !(n.formOctave(start)); n.modifyNoteBySemitones(1))
+				p.playNote(n, 200);
+		} catch (IllegalArgumentException e) {
+			System.out.println("Could not construct note from string");
 			System.exit(0);
-		}
-		
-		Piano p = new Piano();
-		
-		Note n = new Note(start);
-		while (!(n.formOctave(start))) {
-			p.playNote(n, 500);
-			n.modifyNoteBySemitones(1);
+		} catch (MidiUnavailableException e) {
+			System.out.println("MIDI playback is unavailable");
+			System.exit(0);
 		}
 		
 	}

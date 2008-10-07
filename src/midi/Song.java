@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+import javax.sound.midi.MidiUnavailableException;
+
 /**
  * Plays a song from note strings in a file.
  */
@@ -28,6 +30,9 @@ public class Song {
 			playNotes(readFile(args[0]));
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found");
+			System.exit(0);
+		} catch (MidiUnavailableException e) {
+			System.out.println("MIDI playback is unavailable");
 			System.exit(0);
 		}
 			
@@ -54,11 +59,11 @@ public class Song {
 		return notes;
 	}
 	
-	private static void playNotes (Vector<Event> notes) {
+	private static void playNotes (Vector<Event> notes) throws MidiUnavailableException {
 		Instrument piano = new Piano();
-		for (int i = 0; i < notes.size(); i++) {
+		for (int i = 0; i < notes.size(); i++)
 			notes.get(i).play(piano);
-		}
+		
 		try {
 			Thread.sleep(1500);
 		} catch (InterruptedException e) {
