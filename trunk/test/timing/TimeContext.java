@@ -1,4 +1,4 @@
-package midi;
+package timing;
 
 
 public class TimeContext {

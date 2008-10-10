@@ -1,6 +1,12 @@
 /**
  * @author Alex Peterson
- * @version 2008OC05
+ * @version 2008OC06
+ * 
+ * This code is available under the terms of the GNU General Public License v3.0
+ * (http://www.gnu.org/licenses/gpl-3.0.txt)
+ * 
+ * The content is licenced under the Creative Commons Attribution + ShareAlike 2.5 [BY-SA] (Canada)
+ * (http://creativecommons.org/licenses/by-sa/2.5/ca)
  */
 
 package midi;
@@ -12,13 +18,17 @@ import java.util.*;
 import javax.sound.midi.MidiUnavailableException;
 
 /**
- * Plays a song from note strings in a file.
+ * Plays a song from note strings in a file which is specified by the first argument.
+ * 
  */
 public class Song {
 	
+	/* Main Method */
+	
 	/**
-	 * TODO
-	 * @param args
+	 * The <code>main</code> method for <code>Song</code>.
+	 * @see Song
+	 * @param args the list of arguments
 	 */
 	public static void main (String [] args) {
 		if (args.length != 1) {
@@ -35,9 +45,19 @@ public class Song {
 			System.out.println("MIDI playback is unavailable");
 			System.exit(0);
 		}
-			
 	}
 	
+	/* END Main Method */
+	
+	
+	/* Local Methods */
+	
+	/**
+	 * Reads notes and rests from a file and returns the
+	 * @param filename the file to read
+	 * @return a <code>Vector&lt;Event&gt;</code> listing all of the events read from the file
+	 * @throws FileNotFoundException if the file does not exist or is not accessible
+	 */
 	private static Vector<Event> readFile (String filename) throws FileNotFoundException {
 		Scanner s = new Scanner(new File(filename));
 		StringBuffer sb = new StringBuffer();
@@ -59,6 +79,11 @@ public class Song {
 		return notes;
 	}
 	
+	/**
+	 * Plays notes and rests stored in a <code>Vector&lt;Event&gt;</code>.
+	 * @param notes the notes to play
+	 * @throws MidiUnavailableException if MIDI playback is unavailable
+	 */
 	private static void playNotes (Vector<Event> notes) throws MidiUnavailableException {
 		Instrument piano = new Piano();
 		for (int i = 0; i < notes.size(); i++)
@@ -69,4 +94,7 @@ public class Song {
 		} catch (InterruptedException e) {
 		}
 	}
+	
+	/* END Local Methods */
+	
 }
