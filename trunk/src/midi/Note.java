@@ -118,7 +118,7 @@ public class Note extends NoteADT {
 	
 	/**
 	 * Constructs a <code>Note</code> from a <code>String</code>.
-	 * The <code>String</code> should contain the three following elements (in any order):
+	 * The <code>String</code> should contain the three following elements (accidental and octave in any order):
 	 * <pre>note [accidental] [octave]</pre>
 	 * Where:
 	 * <ul>
@@ -147,6 +147,10 @@ public class Note extends NoteADT {
 		super(strNote);
 		
 		int letter = parseNote(strNote);
+		System.out.println(strNote);
+		if (strNote.length() > 1)
+			strNote = strNote.substring(1);
+		System.out.println('\t' + strNote);
 		int acc = parseAccidental(strNote);
 		int octave = parseOctave(strNote);
 		
@@ -278,7 +282,7 @@ public class Note extends NoteADT {
 	
 	private int parseNote (String str) throws IllegalArgumentException {
 		for (char c = 'A'; c <= 'G'; c++)
-			if (str.contains(String.valueOf(c)))
+			if (str.toUpperCase().charAt(0) == c)
 				return letterTable.get(c);
 		throw new IllegalArgumentException("The note could not be parsed.");
 	}
