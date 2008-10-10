@@ -1,18 +1,31 @@
+/**
+ * @author Alex Peterson
+ * @version 2008OC10
+ * 
+ * This code is available under the terms of the GNU General Public License v3.0
+ * (http://www.gnu.org/licenses/gpl-3.0.txt)
+ * 
+ * The content is licenced under the Creative Commons Attribution + ShareAlike 2.5 [BY-SA] (Canada)
+ * (http://creativecommons.org/licenses/by-sa/2.5/ca)
+ */
+
 package midi;
+
+import noteGeneration.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.HashMap;
 
-import noteGeneration.NoteADT;
-
+/**
+ * A class representing a musical note.
+ */
 public class Note extends NoteADT {
 		
 	/* Static */
 		
 		/* Static Constants */
 		
-		private static final double BASE_A4 = 440.0;
 		private static final int DEFAULT_OCTAVE = 4;
 		private static final int ROUNDING_PRECISION = 2;
 		private static final MathContext ROUNDING;
@@ -37,7 +50,7 @@ public class Note extends NoteADT {
 			midiTable = new HashMap<Integer, Double>(128);
 			freqTable = new HashMap<Double, Integer>(128);
 			for (int i = 0; i < 128; i++) {
-				double val = BASE_A4 * Math.pow(2,(i - 69) / 12.0);
+				double val = HZ_CONCERT_PITCH * Math.pow(2,(i - 69) / 12.0);
 				midiTable.put(Integer.valueOf(i), val);
 				freqTable.put((new BigDecimal(val)).round(ROUNDING).doubleValue(), Integer.valueOf(i));
 			}
@@ -140,7 +153,7 @@ public class Note extends NoteADT {
 	 * C-1x
 	 * Eb2
 	 * </pre>
-	 * @param note the note as represented by a <code>String</code>
+	 * @param strNote the note as represented by a <code>String</code>
 	 * @throws IllegalArgumentException if the <code>String</code> is not in a valid format
 	 */
 	public Note (String strNote) throws IllegalArgumentException {
@@ -166,6 +179,7 @@ public class Note extends NoteADT {
 	
 	/* Accessors */
 	
+	@Override
 	/**
 	 * Returns the frequency that this note represents.
 	 * @return the frequency
@@ -174,6 +188,7 @@ public class Note extends NoteADT {
 		return midiTable.get(midi);
 	}
 	
+	@Override
 	/**
 	 * Returns the number of semitones this note is from A4 (440 Hz).
 	 * If this note is lower than A4 then the result is negative.
@@ -185,6 +200,7 @@ public class Note extends NoteADT {
 		return getMIDIAbsoluteNumber() - 69;
 	}
 	
+	@Override
 	/**
 	 * Returns the MIDI index that this note represents.
 	 * This is an <code>int</code> in the range 0 through 127 inclusive.
@@ -199,6 +215,7 @@ public class Note extends NoteADT {
 	
 	/* Methods */
 	
+	@Override
 	/**
 	 * Compares a <code>Note</code> to this <code>NoteADT</code> and determines if the two notes form an octave.
 	 * @param n the <code>Note</code> to compare to this <code>NoteADT</code>
@@ -209,6 +226,7 @@ public class Note extends NoteADT {
 		return res;
 	}
 	
+	@Override
 	/**
 	 * Transposes this <code>Note</code> by a specified number of numberOfSemitones.
 	 * @param numberOfSemitones the number of numberOfSemitones to transpose this note (this can be positive or negative)
@@ -226,12 +244,12 @@ public class Note extends NoteADT {
 	
 	/* (Object) Methods */
 	
+	@Override
 	/**
 	 * Compares this <code>NoteADT</code> to another and returns <code>true</code> if these notes are equivalent.
 	 * @param o the <code>Object</code> to compare this <code>NoteADT</code> against
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	@Override
 	public boolean equals (Object o) {
 		if (o == null)
 			return false;
@@ -248,6 +266,7 @@ public class Note extends NoteADT {
 	
 	/* (Comparable) Methods */
 	
+	@Override
 	/**
 	 * Compares this <code>Note</code> with the specified <code>Note</code> for order.
 	 * For example, if there are two <code>Note</code> objects called <code>A4</code> and <code>B4</code>
@@ -257,10 +276,9 @@ public class Note extends NoteADT {
 	 * (B4).compareTo(A4) == 1
 	 * (A4).compareTo(A4) == 0
 	 * </pre>
-	 * @param n the <code>NoteADT</code> to compare this <code>NoteADT</code> against
+	 * @param o the <code>Object</code> to compare this <code>NoteADT</code> against
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	@Override
 	public int compareTo (Object o) {
 		if (o == null)
 			throw new NullPointerException();
@@ -315,6 +333,12 @@ public class Note extends NoteADT {
 	
 	/* Static Methods */
 	
+	/**
+	 * Parses a <code>String</code> and returns a <code>Note</code> constructed with the appropriate constructor.
+	 * @param str the <code>String</code> to parse.  This can be a <code>String</code> representation of an <code>int</code> or <code>double</code> or a note string
+	 * @return a <code>Note</code> constructed from the <code>String</code>
+	 * @throws IllegalArgumentException if the <code>String</code> is malformed
+	 */
 	public static Note parseNoteString (String str) throws IllegalArgumentException {
 		Note note;
 		try {

@@ -1,12 +1,19 @@
 /**
  * @author Alex Peterson
  * @version 2008OC05
+ * 
+ * This code is available under the terms of the GNU General Public License v3.0
+ * (http://www.gnu.org/licenses/gpl-3.0.txt)
+ * 
+ * The content is licenced under the Creative Commons Attribution + ShareAlike 2.5 [BY-SA] (Canada)
+ * (http://creativecommons.org/licenses/by-sa/2.5/ca)
  */
 
 package midi;
 
 /**
- * 
+ * Represents a musical event which is either a note or a rest.
+ * The event has a specified duration that the event should last
  */
 public class Event {
 	
