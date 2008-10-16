@@ -13,8 +13,6 @@ package midi;
 
 import noteGeneration.*;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.HashMap;
 
 /**
@@ -24,11 +22,19 @@ public class Note extends NoteADT {
 		
 	/* Static */
 		
+		/* Public Static Constants */
+		
+		/**
+		 * Represents the precision to round (and accept) frequencies to.
+		 */
+		private static final int ROUNDING_PRECISION = 2;
+		
+		/* END Public Static Constants */
+	
 		/* Static Constants */
 		
 		private static final int DEFAULT_OCTAVE = 4;
-		private static final int ROUNDING_PRECISION = 2;
-		private static final MathContext ROUNDING;
+		private static final double ROUNDING_FACTOR;
 		
 		/* END Static Constants */
 		
@@ -42,18 +48,17 @@ public class Note extends NoteADT {
 		/* END Static Fields */
 		
 		
-		/* Static Initializer */
+		/* Static Initialiser */
 		
 		static {
-			ROUNDING = new MathContext(ROUNDING_PRECISION);
+			ROUNDING_FACTOR = Math.pow(10, ROUNDING_PRECISION);
 			
 			midiTable = new HashMap<Integer, Double>(128);
 			freqTable = new HashMap<Double, Integer>(128);
 			for (int i = 0; i < 128; i++) {
 				double val = HZ_CONCERT_PITCH * Math.pow(2,(i - 69) / 12.0);
 				midiTable.put(Integer.valueOf(i), val);
-				freqTable.put((new BigDecimal(val)).round(ROUNDING).doubleValue(), Integer.valueOf(i));
-			}
+				freqTable.put(Note.roundFrequency(val), Integer.valueOf(i));			}
 			
 			letterTable = new HashMap<Character, Integer>(7);
 			letterTable.put(Character.valueOf('C'), Integer.valueOf(0));
@@ -65,7 +70,7 @@ public class Note extends NoteADT {
 			letterTable.put(Character.valueOf('B'), Integer.valueOf(11));
 		}
 		
-		/* END Static Initializer */
+		/* END Static Initialiser */
 		
 		
 		/* Static Methods */
@@ -81,6 +86,7 @@ public class Note extends NoteADT {
 		
 	/* END Static */
 	
+		
 	/* Fields */
 	
 	/**
@@ -109,7 +115,7 @@ public class Note extends NoteADT {
 	 */
 	public Note (double frequency) throws IllegalArgumentException {
 		super(frequency);
-		double dFreq = (new BigDecimal(frequency)).round(ROUNDING).doubleValue();
+		double dFreq = Note.roundFrequency(frequency);
 		if (!midiTable.containsValue(dFreq))
 			throw new IllegalArgumentException("The frequency must be a valid half tone frequency between 0.0 and 13000.0 inclusive.");
 		
@@ -318,10 +324,18 @@ public class Note extends NoteADT {
 		return 0;
 	}
 	
-	private int parseOctave (String str) {
-		for (int i = -1; i <= 9; i++)
-			if (str.contains(String.valueOf(i)))
+	private int parseOctave (String str) throws IllegalArgumentException {
+		for (int i = -1; i <= 9; i++) {
+			String si = String.valueOf(i);
+			int idx = str.indexOf(si);
+			if (idx != -1) {
+				String s = str.substring(0, idx) + str.substring(idx + si.length());
+				for (int j = 0; j < s.length(); j++)
+						if (Character.isDigit(s.charAt(j)) || s.charAt(j) == '-')
+							throw new IllegalArgumentException("The octave is invalid.");
 				return i;
+			}
+		}
 		return DEFAULT_OCTAVE;
 	}
 	
@@ -350,6 +364,15 @@ public class Note extends NoteADT {
 			}
 		}
 		return note;
+	}
+	
+	/**
+	 * Rounds a frequency to the precision specified by <code>ROUNDING_PRECISION</code>.
+	 * @param frequency the frequency to round
+	 * @return the rounded frequency
+	 */
+	public static double roundFrequency (double frequency) {
+		return Math.round(frequency * ROUNDING_FACTOR) / ROUNDING_FACTOR;
 	}
 	
 	/* Static Methods */
