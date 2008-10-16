@@ -9,21 +9,22 @@
  * (http://creativecommons.org/licenses/by-sa/2.5/ca)
  */
 
-package midi;
+package midi.instr;
 
 import javax.sound.midi.MidiUnavailableException;
+
 
 /**
  * Represents a piano instrument.
  */
-public class Piano extends Instrument {
+public class Strings extends Instrument {
 	
 	/**
-	 * Constructs a <code>Piano</code>.
+	 * Constructs a <code>Strings</code>.
 	 * @throws MidiUnavailableException if MIDI playback is unavailable
 	 */
-	public Piano () throws MidiUnavailableException {
-		super(30);
+	public Strings () throws MidiUnavailableException {
+		super(49);
 	}
 		
 }

@@ -13,9 +13,14 @@ package midi;
 
 import javax.sound.midi.MidiUnavailableException;
 
+import midi.instr.Instrument;
+import midi.instr.Piano;
+
 /**
  * Play a chromatic scale up from the note specified by the first argument.
  * The note can be specified as any value which validly constructs a <code>Note</code> with {@link Note#parseNoteString(String)}.
+ * The second argument optionally specifies the instrument to use, either as a patch number or
+ * the name of a subclass of <code>midi.instr.Instrument</code>.
  */
 public class Melody {
 	
@@ -27,22 +32,38 @@ public class Melody {
 	 * @param args the list of arguments
 	 */
 	public static void main (String [] args) {
-		if (args.length != 1) {
-			System.err.println("Usage: Melody <startnote>");
+		if (args.length < 1 || args.length > 2) {
+			System.err.println("Usage: Melody startnote [instrument]");
+			System.exit(0);
+		}
+		
+		//get instrument
+		Instrument instr;
+		try {
+			if (args.length == 2) {
+					try {
+						instr = Instrument.parseInstrumentString(args[1]);
+					} catch (IllegalArgumentException e) {
+						System.out.println("Using Piano (patch 01) as default instrument");
+						instr = new Piano();
+					}
+				
+			} else {
+				instr = new Piano();
+			}
+		} catch (MidiUnavailableException e) {
+			System.out.println("MIDI playback is unavailable");
+			instr = null;
 			System.exit(0);
 		}
 		
 		String str = args[0];
 		try {
 			Note start = Note.parseNoteString(str);
-			Piano p = new Piano();
 			for (Note n = new Note(start); !(n.formOctave(start)); n.modifyNoteBySemitones(1))
-				p.playNote(n, 200);
+				instr.playNote(n, 200);
 		} catch (IllegalArgumentException e) {
 			System.out.println("Could not create note from string");
-			System.exit(0);
-		} catch (MidiUnavailableException e) {
-			System.out.println("MIDI playback is unavailable");
 			System.exit(0);
 		}
 	}

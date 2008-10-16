@@ -9,9 +9,11 @@
  * (http://creativecommons.org/licenses/by-sa/2.5/ca)
  */
 
-package midi;
+package midi.instr;
 
 import javax.sound.midi.*;
+
+import midi.Note;
 
 /**
  * Represents an instrument which can play notes.
@@ -25,6 +27,8 @@ public class Instrument {
 	/* END Fields */
 	
 	
+	/* Constructors */
+	
 	/**
 	 * Constructs an instrument from a patch number.
 	 * @param patch the patch to use
@@ -36,6 +40,10 @@ public class Instrument {
     	synthesizer = MidiSystem.getSynthesizer();
 	    synthesizer.open();
 	    javax.sound.midi.Instrument [] instruments = synthesizer.getDefaultSoundbank().getInstruments();
+	    
+	    for (int i = 0; i < instruments.length; i++)
+	    	System.out.println("[" + instruments[i].getName() + "]");
+	    
 	    if (instruments == null)
 	    	throw new MidiUnavailableException("MIDI unavailable. There is no default soundbank.");
 		if (patch < 0 || patch > instruments.length)
@@ -43,8 +51,23 @@ public class Instrument {
 		
 		synthesizer.loadInstrument(instruments[patch]);
 		MidiChannel [] channels = synthesizer.getChannels();
-	    channel = channels[1];
+	    int i;
+		for (i = 0; i < channels.length; i++)
+	    	if (channels[i] != null)
+	    		break;
+	    
+	    if (i < channels.length)
+	    	channel = channels[i];
+	    else
+	    	throw new MidiUnavailableException();
+			
+	    channel.programChange(patch);
 	}
+	
+	/* END Constructors */
+	
+	
+	/* Methods */
 	
 	/**
 	 * Make the instrument play a <code>Note</code> for the specified duration, and at the default (full) velocity (volume).
@@ -81,5 +104,30 @@ public class Instrument {
 			Thread.sleep(duration);
 		} catch (InterruptedException e) {}
 	}
+	
+	/* END Methods */
+	
+	
+	/* Static Methods */
+	
+	public static Instrument parseInstrumentString (String str) throws IllegalArgumentException, MidiUnavailableException {
+		Instrument instr;
+		try {
+			//Construct an instrument using the (int) constructor
+			instr = new Instrument(Integer.parseInt(str));
+		} catch (NumberFormatException e) {
+			try {
+				Class c = Class.forName("midi." + str);
+			    instr = (Instrument)c.newInstance();
+			} catch (Exception e1) {
+				throw new IllegalArgumentException("Cannot find instrument " + str);
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new IllegalArgumentException("Patch number is out of bounds");
+		}
+		return instr;
+	}
+	
+	/* END Static Methods */
 	
 }

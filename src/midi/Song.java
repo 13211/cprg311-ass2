@@ -17,9 +17,13 @@ import java.util.*;
 
 import javax.sound.midi.MidiUnavailableException;
 
+import midi.instr.Instrument;
+import midi.instr.Piano;
+
 /**
  * Plays a song from note strings in a file which is specified by the first argument.
- * 
+ * The second argument optionally specifies the instrument to use, either as a patch number or
+ * the name of a subclass of <code>midi.instr.Instrument</code>.
  */
 public class Song {
 	
@@ -31,18 +35,35 @@ public class Song {
 	 * @param args the list of arguments
 	 */
 	public static void main (String [] args) {
-		if (args.length != 1) {
-			System.out.println("Usage: Song <filename>");
+		if (args.length < 1 && args.length > 2) {
+			System.out.println("Usage: Song filename [instrument]");
+			System.exit(0);
+		}
+		
+		//get instrument
+		Instrument instr;
+		try {
+			if (args.length == 2) {
+					try {
+						instr = Instrument.parseInstrumentString(args[1]);
+					} catch (IllegalArgumentException e) {
+						System.out.println("Using Piano (patch 01) as default instrument");
+						instr = new Piano();
+					}
+				
+			} else {
+				instr = new Piano();
+			}
+		} catch (MidiUnavailableException e) {
+			System.out.println("MIDI playback is unavailable");
+			instr = null;
 			System.exit(0);
 		}
 		
 		try {
-			playNotes(readFile(args[0]));
+			playNotes(readFile(args[0]), instr);
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found");
-			System.exit(0);
-		} catch (MidiUnavailableException e) {
-			System.out.println("MIDI playback is unavailable");
 			System.exit(0);
 		}
 	}
@@ -84,10 +105,9 @@ public class Song {
 	 * @param notes the notes to play
 	 * @throws MidiUnavailableException if MIDI playback is unavailable
 	 */
-	private static void playNotes (Vector<Event> notes) throws MidiUnavailableException {
-		Instrument piano = new Piano();
+	private static void playNotes (Vector<Event> notes, Instrument instr) {
 		for (int i = 0; i < notes.size(); i++)
-			notes.get(i).play(piano);
+			notes.get(i).play(instr);
 		
 		try {
 			Thread.sleep(1500);
