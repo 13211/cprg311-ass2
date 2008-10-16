@@ -11,6 +11,8 @@
 
 package midi;
 
+import midi.instr.Instrument;
+
 /**
  * Represents a musical event which is either a note or a rest.
  * The event has a specified duration that the event should last

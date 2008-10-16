@@ -160,10 +160,8 @@ public class Note extends NoteADT {
 		super(strNote);
 		
 		int letter = parseNote(strNote);
-		System.out.println(strNote);
 		if (strNote.length() > 1)
 			strNote = strNote.substring(1);
-		System.out.println('\t' + strNote);
 		int acc = parseAccidental(strNote);
 		int octave = parseOctave(strNote);
 		
@@ -222,8 +220,7 @@ public class Note extends NoteADT {
 	 * @return <code>true</code> if these notes form an octave
 	 */
 	public boolean formOctave (NoteADT n) {
-		boolean res = Math.abs(n.getMIDIAbsoluteNumber() - this.midi) == 12;
-		return res;
+		return Math.abs(n.getMIDIAbsoluteNumber() - this.midi) == 12;
 	}
 	
 	@Override
