@@ -49,17 +49,17 @@ public abstract class NoteADT implements Comparable{
 
 	public NoteADT(double frequency)
 	{
-		//You must provide the code for this
+		//This code is implemented (as expected) in the subclass
 	}
 
 	public NoteADT(int semitones)
 	{
-		//You must provide the code for this
+		//This code is implemented (as expected) in the subclass
 	}
 
 	public NoteADT(String strNote) throws IllegalArgumentException
 	{
-		//You must provide the code for this
+		//This code is implemented (as expected) in the subclass
 	}
 
   /**

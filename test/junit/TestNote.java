@@ -14,9 +14,8 @@ package junit;
 import midi.*;
 
 import junit.framework.TestCase;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+
 
 /**
  * JUnit 4 test case for <code>Note</code>.

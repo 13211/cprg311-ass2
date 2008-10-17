@@ -15,6 +15,7 @@ import noteGeneration.*;
 
 import java.util.HashMap;
 
+
 /**
  * A class representing a musical note.
  */
@@ -56,7 +57,7 @@ public class Note extends NoteADT {
 			midiTable = new HashMap<Integer, Double>(128);
 			freqTable = new HashMap<Double, Integer>(128);
 			for (int i = 0; i < 128; i++) {
-				double val = HZ_CONCERT_PITCH * Math.pow(2,(i - 69) / 12.0);
+				double val = HZ_CONCERT_PITCH * Math.pow(2,(i - MIDI_CONCERT_PITCH) / 12.0);
 				midiTable.put(Integer.valueOf(i), val);
 				freqTable.put(Note.roundFrequency(val), Integer.valueOf(i));			}
 			
@@ -130,9 +131,9 @@ public class Note extends NoteADT {
 	 */
 	public Note (int semitones) throws IllegalArgumentException {
 		super(semitones);
-		if (semitones < -69 || semitones > 58)
+		if (semitones < LOW_MIDI_ABSOLUTE_NUMBER - MIDI_CONCERT_PITCH || semitones > HIGH_MIDI_ABSOLUTE_NUMBER - MIDI_CONCERT_PITCH)
 			throw new IllegalArgumentException("The number of steps from A4 must be between -69 and 58 inclusive.");
-		midi = semitones + 69;
+		midi = semitones + MIDI_CONCERT_PITCH;
 	}
 	
 	/**
@@ -172,7 +173,7 @@ public class Note extends NoteADT {
 		int octave = parseOctave(strNote);
 		
 		int test = (octave + 1) * 12 + letter + acc;
-		if (test < 0 || test > 127)
+		if (test < LOW_MIDI_ABSOLUTE_NUMBER || test > HIGH_MIDI_ABSOLUTE_NUMBER)
 			throw new IllegalArgumentException("The note was parsed but was out of range.");
 		
 		midi = test;
@@ -201,7 +202,7 @@ public class Note extends NoteADT {
 	 * @return the number of semitones this note is from A4
 	 */
 	public int getHalfSteps () {
-		return getMIDIAbsoluteNumber() - 69;
+		return getMIDIAbsoluteNumber() - MIDI_CONCERT_PITCH;
 	}
 	
 	@Override
@@ -236,9 +237,9 @@ public class Note extends NoteADT {
 	 * @throws IllegalArgumentException if the transposition would place the note out of range
 	 */
 	public void modifyNoteBySemitones (int numberOfSemitones) throws IllegalArgumentException {
-		if (midi + numberOfSemitones < 0 || midi + numberOfSemitones > 127)
+		if (midi + numberOfSemitones < LOW_MIDI_ABSOLUTE_NUMBER || midi + numberOfSemitones > HIGH_MIDI_ABSOLUTE_NUMBER)
 		throw new IllegalArgumentException("The offset in semitones must be between " +
-					-midi + " and " + (127 - midi) + " inclusive for this note.");
+					(LOW_MIDI_ABSOLUTE_NUMBER - midi) + " and " + (HIGH_MIDI_ABSOLUTE_NUMBER - midi) + " inclusive for this note.");
 		midi += numberOfSemitones;
 	}
 	
