@@ -11,13 +11,12 @@
 
 package midi;
 
-import midi.instr.Instrument;
 
 /**
  * Represents a musical event which is either a note or a rest.
  * The event has a specified duration that the event should last
  */
-public class Event {
+public class MusicEvent {
 	
 	/* Fields */
 	
@@ -37,7 +36,7 @@ public class Event {
 	 * @param n the <code>Note</code>
 	 * @throws IllegalArgumentException if the constructor is passed a <code>EventType</code> of <code>NOTE</code> and the <code>Note</code> is unspecified (<code>null</code>).
 	 */
-	public Event (EventType type, int duration, Note n) throws IllegalArgumentException {
+	public MusicEvent (EventType type, int duration, Note n) throws IllegalArgumentException {
 		if (type == EventType.NOTE && n == null)
 			throw new IllegalArgumentException("You must specify a note with this EventType");
 		
@@ -55,7 +54,7 @@ public class Event {
 	 * @param note the <code>String</code> to parse
 	 * @throws IllegalArgumentException if the <code>String</code> is of the wrong format
 	 */
-	public Event (String note) throws IllegalArgumentException {
+	public MusicEvent (String note) throws IllegalArgumentException {
 		String newnote;
 		if (note.charAt(note.length() - 1) == '-') {
 			duration = 400;

@@ -9,16 +9,37 @@
  * (http://creativecommons.org/licenses/by-sa/2.5/ca)
  */
 
-package midi.instr;
+package midi;
+
+import java.util.*;
 
 import javax.sound.midi.*;
 
-import midi.Note;
 
 /**
  * Represents an instrument which can play notes.
  */
 public class Instrument {
+	
+	/* Static */
+	
+	private static HashMap<String, Integer> namedInstruments;
+	
+	static {
+		namedInstruments = new HashMap<String, Integer>(8);
+		
+		namedInstruments.put("piano", 1);
+		namedInstruments.put("organ", 20);
+		namedInstruments.put("violin", 41);
+		namedInstruments.put("trumpet", 57);
+		namedInstruments.put("guitar", 26);
+		namedInstruments.put("flute", 74);
+		namedInstruments.put("oboe", 69);
+		namedInstruments.put("marimba", 13);
+	}
+	
+	/* END Static */
+	
 	
 	/* Fields */
 	
@@ -40,9 +61,6 @@ public class Instrument {
     	synthesizer = MidiSystem.getSynthesizer();
 	    synthesizer.open();
 	    javax.sound.midi.Instrument [] instruments = synthesizer.getDefaultSoundbank().getInstruments();
-	    
-	    for (int i = 0; i < instruments.length; i++)
-	    	System.out.println("[" + instruments[i].getName() + "]");
 	    
 	    if (instruments == null)
 	    	throw new MidiUnavailableException("MIDI unavailable. There is no default soundbank.");
@@ -110,22 +128,52 @@ public class Instrument {
 	
 	/* Static Methods */
 	
+	/**
+	 * Constructs an <code>Instrument</code> from a <code>String</code>.
+	 * If the <code>String</code> is parsable into an <code>int</code> then the <code>Instrument</code>
+	 * will be created with <code>Instrument(int)</code>, where the <code>int</code> is the patch number to use.
+	 * The <code>String</code> can also be one of the following case insensitive strings (in the first column):
+	 * <table>
+	 * <tr><th>Instrument</th><th>Patch</th></tr>
+	 * <tr><td>piano</td><td>1</td></tr>
+	 * <tr><td>organ</td><td>20</td></tr>
+	 * <tr><td>violin</td><td>41</td></tr>
+	 * <tr><td>trumpet</td><td>57</td></tr>
+	 * <tr><td>guitar</td><td>26</td></tr>
+	 * <tr><td>flute</td><td>74</td></tr>
+	 * <tr><td>oboe</td><td>69</td></tr>
+	 * <tr><td>marimba</td><td>13</td></tr>
+	 * </table>
+	 * @param str a <code>String</code> to be parsed into an <code>Instrument</code>
+	 * @return an <code>Instrument</code> parsed from the str
+	 * @throws IllegalArgumentException if str cannot be parsed into an <code>Instrument</code>
+	 * @throws MidiUnavailableException if MIDI playback is unavailable
+	 */
 	public static Instrument parseInstrumentString (String str) throws IllegalArgumentException, MidiUnavailableException {
 		Instrument instr;
 		try {
 			//Construct an instrument using the (int) constructor
 			instr = new Instrument(Integer.parseInt(str));
 		} catch (NumberFormatException e) {
-			try {
-				Class c = Class.forName("midi." + str);
-			    instr = (Instrument)c.newInstance();
-			} catch (Exception e1) {
+			str = str.toLowerCase();
+			if (namedInstruments.containsKey(str))
+				instr = new Instrument(namedInstruments.get(str));
+			else
 				throw new IllegalArgumentException("Cannot find instrument " + str);
-			}
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new IllegalArgumentException("Patch number is out of bounds");
 		}
 		return instr;
+	}
+	
+	/**
+	 * Returns a <code>Vector&lt;String&gt;</code> of available named instruments.
+	 * @return a list of named instruments
+	 */
+	public static Vector<String> getNamedInstruments () {
+		Vector<String> v = new Vector<String>(10);
+	    Iterator<String> i = namedInstruments.keySet().iterator();
+	    while (i.hasNext())
+	    	v.add(i.next());
+	    return v;
 	}
 	
 	/* END Static Methods */

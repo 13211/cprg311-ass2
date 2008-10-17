@@ -9,7 +9,9 @@
  * (http://creativecommons.org/licenses/by-sa/2.5/ca)
  */
 
-package midi;
+package song;
+
+import midi.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,13 +19,11 @@ import java.util.*;
 
 import javax.sound.midi.MidiUnavailableException;
 
-import midi.instr.Instrument;
-import midi.instr.Piano;
 
 /**
  * Plays a song from note strings in a file which is specified by the first argument.
  * The second argument optionally specifies the instrument to use, either as a patch number or
- * the name of a subclass of <code>midi.instr.Instrument</code>.
+ * one of the named instruments available within <code>Instrument</code>.
  */
 public class Song {
 	
@@ -36,7 +36,11 @@ public class Song {
 	 */
 	public static void main (String [] args) {
 		if (args.length < 1 && args.length > 2) {
-			System.out.println("Usage: Song filename [instrument]");
+			System.out.println("Usage: Song filename [instrument]\n");
+			System.out.println("Available instruments:");
+			Iterator<String> i = Instrument.getNamedInstruments().iterator();
+			while (i.hasNext())
+				System.out.println('\t' + i.next());
 			System.exit(0);
 		}
 		
@@ -47,12 +51,13 @@ public class Song {
 					try {
 						instr = Instrument.parseInstrumentString(args[1]);
 					} catch (IllegalArgumentException e) {
-						System.out.println("Using Piano (patch 01) as default instrument");
-						instr = new Piano();
+						System.out.println(e.getMessage());
+						System.out.println("Using piano (patch 001) as default instrument");
+						instr = new Instrument(1);
 					}
 				
 			} else {
-				instr = new Piano();
+				instr = new Instrument(1);
 			}
 		} catch (MidiUnavailableException e) {
 			System.out.println("MIDI playback is unavailable");
@@ -79,20 +84,18 @@ public class Song {
 	 * @return a <code>Vector&lt;Event&gt;</code> listing all of the events read from the file
 	 * @throws FileNotFoundException if the file does not exist or is not accessible
 	 */
-	private static Vector<Event> readFile (String filename) throws FileNotFoundException {
+	private static Vector<MusicEvent> readFile (String filename) throws FileNotFoundException {
 		Scanner s = new Scanner(new File(filename));
 		StringBuffer sb = new StringBuffer();
 		while (s.hasNext())
 			sb.append(s.nextLine() + ",");
 		
 		StringTokenizer st = new StringTokenizer(sb.toString(), ",");
-		Vector<Event> notes = new Vector<Event>(st.countTokens());
+		Vector<MusicEvent> notes = new Vector<MusicEvent>(st.countTokens());
 		for (int i = 0; st.hasMoreTokens(); i++) {
 			String str = st.nextToken().trim();
-			
 			try {
-				Event ni = new Event(str);
-				notes.add(ni);
+				notes.add(new MusicEvent(str));
 			} catch (IllegalArgumentException e) {
 				System.out.println("Note string \"" + str + "\" was ignored");
 			}
@@ -105,14 +108,10 @@ public class Song {
 	 * @param notes the notes to play
 	 * @throws MidiUnavailableException if MIDI playback is unavailable
 	 */
-	private static void playNotes (Vector<Event> notes, Instrument instr) {
+	private static void playNotes (Vector<MusicEvent> notes, Instrument instr) {
 		for (int i = 0; i < notes.size(); i++)
 			notes.get(i).play(instr);
-		
-		try {
-			Thread.sleep(1500);
-		} catch (InterruptedException e) {
-		}
+		instr.rest(1500);
 	}
 	
 	/* END Local Methods */
