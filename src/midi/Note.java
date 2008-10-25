@@ -31,7 +31,8 @@ public class Note extends NoteADT {
 		private static final int ROUNDING_PRECISION = 2;
 		
 		/* END Public Static Constants */
-	
+		
+		
 		/* Static Constants */
 		
 		private static final int DEFAULT_OCTAVE = 4;
@@ -57,7 +58,7 @@ public class Note extends NoteADT {
 			midiTable = new HashMap<Integer, Double>(128);
 			freqTable = new HashMap<Double, Integer>(128);
 			for (int i = 0; i < 128; i++) {
-				double val = HZ_CONCERT_PITCH * Math.pow(2,(i - MIDI_CONCERT_PITCH) / 12.0);
+				double val = HZ_CONCERT_PITCH * Math.pow(2, (i - MIDI_CONCERT_PITCH) / 12.0);
 				midiTable.put(Integer.valueOf(i), val);
 				freqTable.put(Note.roundFrequency(val), Integer.valueOf(i));			}
 			
