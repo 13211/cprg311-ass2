@@ -35,7 +35,7 @@ public class Song {
 	 * @param args the list of arguments
 	 */
 	public static void main (String [] args) {
-		if (args.length < 1 && args.length > 2) {
+		if (args.length < 1 || args.length > 2) {
 			System.out.println("Usage: Song filename [instrument]\n");
 			System.out.println("Available instruments:");
 			Iterator<String> i = Instrument.getNamedInstruments().iterator();
